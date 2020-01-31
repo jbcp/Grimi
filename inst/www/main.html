@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="Grimi/img/logo-fav.png">
+    <title>Clinical Trials</title>
+    <link rel="stylesheet" type="text/css" href="Grimi/lib/perfect-scrollbar/css/perfect-scrollbar.css"/>
+    <link rel="stylesheet" type="text/css" href="Grimi/lib/material-design-icons/css/material-design-iconic-font.min.css"/>
+    <link rel="stylesheet" type="text/css" href="Grimi/lib/select2/css/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="Grimi/lib/bootstrap-slider/css/bootstrap-slider.min.css"/>
+    <link rel="stylesheet" type="text/css" href="Grimi/lib/dragula/dragula.css"/>
+    <link rel="stylesheet" type="text/css" href="Grimi/css/app.css"/>
+
+    <style>
+      .select2-results__option[aria-selected=true] {
+        display: none;
+      }
+      .select2-selection--multiple{
+            overflow: hidden !important;
+            height: auto !important;
+      }
+    </style>
+    <script type="text/javascript">
+
+      var title_size = 18
+      var x_axis_size = 18
+      var y_axis_size = 18
+      var selected_title = ""
+      var test = ""
+      var checked_db = ""
+      var checked_db_name = ""
+      var year_check = "1"
+      var month_check = "1"
+      var day_check = "1"
+
+      function close_event(){
+        Shiny.setInputValue('close', TRUE);
+      }
+
+      $(document).on('shiny:connected', function(event){
+        var myWidth = $(window).width();
+        Shiny.setInputValue('shiny_width', myWidth);
+      });
+
+      $(document).on('shiny:connected', function(event){
+        var myHeight = $(window).height();
+        Shiny.setInputValue('shiny_height', myHeight);
+      });
+
+      $(document).ready(function(){
+      	App.init();	
+
+        show_option("Histogram")
+        var new_height = $(window).height() - 250;
+        $('#graph_card').height(new_height)
+
+        $(window).resize(resizeGraph);
+        $('#position_div').hide();
+
+        var colorPicker = new iro.ColorPicker("#color-picker-container", {
+          with: 90,
+          color : "rgb(255, 0, 0)",
+          borderWidth : 1,
+          borderColor: "#ffff"
+        });
+
+        colorPicker.on('color:change', select_color_finish)
+
+        var fontColor = new iro.ColorPicker("#font-color-container", {
+          with: 280,
+          color : "rgb(255, 0, 0)",
+          borderWidth : 1,
+          borderColor: "#ffff"
+        });
+
+        fontColor.on('color:change', select_font_color_finish)
+
+        var containers = $('.drag-container').toArray();
+        containers.concat($('.drag-source').toArray());
+
+        dragula([document.getElementById("source"), document.querySelector("variables")], {
+          isContainer: function(el){
+            return el.classList.contains('drag-container');
+          },
+          copy: function (el, source) {
+            return source === document.getElementById("source")
+          },
+          removeOnSpill: function(el, source){
+            return true
+          },
+          accepts: function (el, target) {
+            return target !== document.getElementById("source")
+          }
+        }).on('drop', drop).on('remove', remove);
+
+        function drop(el, to, from){
+          if(to === document.getElementById("variable_x")){
+            Shiny.setInputValue("data_x", el.id)
+          }
+          if(to === document.getElementById("variable_y")){
+            Shiny.setInputValue("data_y", el.id)
+          }
+          if(to === document.getElementById("variable_fill")){
+            Shiny.setInputValue("data_fill", el.id)
+          }
+          if(to === document.getElementById("variable_facet")){
+            Shiny.setInputValue("data_facet", el.id)
+          }
+          if(to === document.getElementById("variable_color")){
+            Shiny.setInputValue("data_color", el.id)
+          }
+          if(to === document.getElementById("variable_size")){
+            Shiny.setInputValue("data_size", el.id)
+          }
+          if(from === document.getElementById("variable_x")){
+            Shiny.setInputValue("data_x", "")
+          }
+          if(from === document.getElementById("variable_y")){
+            Shiny.setInputValue("data_y", "")
+          }
+          if(from === document.getElementById("variable_fill")){
+            Shiny.setInputValue("data_fill", "")
+          }
+          if(from === document.getElementById("variable_facet")){
+            Shiny.setInputValue("data_facet", "")
+          }
+          if(from === document.getElementById("variable_color")){
+            Shiny.setInputValue("data_color", "")
+          }
+          if(from === document.getElementById("variable_size")){
+            Shiny.setInputValue("data_size", "")
+          }
+        }
+        
+        function remove(el, to, from){
+          if(from === document.getElementById("variable_x")){
+            Shiny.setInputValue("data_x", "")
+          }
+          if(from === document.getElementById("variable_y")){
+            Shiny.setInputValue("data_y", "")
+          }
+          if(from === document.getElementById("variable_fill")){
+            Shiny.setInputValue("data_fill", "")
+          }
+          if(from === document.getElementById("variable_facet")){
+            Shiny.setInputValue("data_facet", "")
+          }
+          if(from === document.getElementById("variable_color")){
+            Shiny.setInputValue("data_color", "")
+          }
+          if(from === document.getElementById("variable_size")){
+            Shiny.setInputValue("data_size", "")
+          }
+        }
+
+        $('.dropdown-menu').click(function(e) {
+            e.stopPropagation();
+        });
+
+        function formatType (type) {
+          if (!type.id) { return type.text; }
+          var $type = $(
+          '<span ><img sytle="display: inline-block;" width=15px height=15px src="Grimi/img/'+type.text+'-graph.png" /> ' + type.text + '</span>'
+          );
+          return $type;
+        }
+
+        function formatShape (shape) {
+          if (!shape.id) { return shape.text; }
+          console.log(shape.text)
+          var $shape = $(
+          '<span><img sytle="display: inline-block;" width=15px height=15px src="Grimi/img/'+shape.text+'-shape.png" /> ' + shape.text + '</span>'
+          );
+          return $shape;
+        }
+        
+        $("#variable_type").select2({
+          theme: "default",
+          width: '98%',
+          templateResult: formatType,
+          templateSelection: formatType 
+        }).change(function(){
+          console.log(this.value);
+          Shiny.setInputValue(this.id, this.value)
+          show_option(this.value)
+        });
+
+        $('select[name=default_select]').select2({
+          theme: "default",
+          width: '98%'
+        }).change(function(){
+          Shiny.setInputValue(this.id, this.value)
+        })
+
+        $('select[name=img_select]').select2({
+          theme: "default",
+          width: '98%',
+          templateResult: formatShape,
+          templateSelection: formatShape   
+        }).change(function(){
+          Shiny.setInputValue(this.id, this.value)
+        })
+
+        $('label[name=default_select]').change(function(){
+          Shiny.setInputValue(this.id, this.value)
+        })
+
+        $('input[name=text-radio]').change(function(){
+          selected_title = $(this).val()
+          switch(selected_title){
+            case 'title':
+              $('#font-size').val(title_size.toString())
+            break;
+            case 'x_label':
+              $('#font-size').val(x_axis_size.toString())
+            break;
+            case 'y_label':
+              $('#font-size').val(y_axis_size.toString())
+            break;
+          }
+          Shiny.setInputValue("select_title_axis", $(this).val())
+        })
+
+        $('#font-size').change(function(){
+          switch(selected_title){
+            case 'title':
+              title_size = this.value;
+            break;
+            case 'x_label':
+              x_axis_size = this.value;
+            break;
+            case 'y_label':
+              y_axis_size = this.value;
+            break;
+          }
+
+          Shiny.setInputValue("font_size", this.value)
+        })
+
+        $('input[name=default_slider]').change(function(){
+          Shiny.setInputValue(this.id, Number(this.value))
+        })
+
+        $('input[name=default_checkbox]').change(function(){
+          if($("#"+this.id).is(":checked")){
+            Shiny.setInputValue(this.id, true)
+            if(this.id == "variable_label"){$('#position_div').show()}
+          }
+          else{
+            Shiny.setInputValue(this.id, false)
+            if(this.id == "variable_label"){$('#position_div').hide()}
+          }
+        })
+
+      });
+
+      window.onload = function(){
+        $('#width').trigger("change");
+        $('#line_size').trigger("change");
+        $('#outlier_size').trigger("change");
+        $('#option_alpha').trigger("change");
+        $('#option_adjust').trigger("change");
+        $('#variable_type').trigger("change");
+      }
+
+      function resizeGraph(){
+        var new_height = $(window).height() - 250;
+        $('#graph_card').height(new_height)
+      }
+
+      function select_color_finish(color, change){
+        Shiny.setInputValue("single_color_value", color.hexString)
+      }
+
+      function select_font_color_finish(color, change){
+        Shiny.setInputValue("font_color_value", color.hexString)
+      }
+
+      // function hide_All(){
+      //   console.log("hide_All()")
+      //   $('div[name=option_div]').hide()
+      //   $('table[name=option2_div]').hide()
+      // }
+
+      
+      Shiny.addCustomMessageHandler('filter_data', function(data){
+        test = data
+        while(document.getElementById("filter_menu").hasChildNodes()) document.getElementById("filter_menu").removeChild(document.getElementById("filter_menu").firstChild);
+        for(var i = 0; i < data.length; i++){
+          var CreateDiv = document.createElement("div");
+          CreateDiv.setAttribute("class", "col-12 mt-2");
+          document.getElementById("filter_menu").appendChild(CreateDiv);
+
+          var filter_name = document.createElement("span");
+          CreateDiv.appendChild(filter_name);
+          filter_name.setAttribute("style", "font-weight:bold; font-size:15px")
+          filter_name.appendChild(document.createTextNode(data[i].name));
+
+          var selectDiv = document.createElement("div");
+          selectDiv.setAttribute("class", "col-12");
+          selectDiv.setAttribute("style", "height: 130px; overflow:auto")
+          CreateDiv.appendChild(selectDiv)
+
+          var select_input = document.createElement("select");
+          selectDiv.appendChild(select_input);
+          select_input.setAttribute("class", "select2");
+          
+          select_input.setAttribute("id", data[i].name);
+          select_input.setAttribute("name", "filter_data_sets")
+
+          for(var j = 1; j <= data[i].data.length-1; j++){
+            var option_input = document.createElement("option");
+            option_input.setAttribute("value", data[i].data[j].data);
+            option_input.setAttribute("id", j);
+            var option_label = document.createTextNode(data[i].data[j].data);
+            option_input.appendChild(option_label);
+            select_input.appendChild(option_input);
+          }
+        }
+
+        $('select[name=filter_data_sets]').select2({
+            width: '98%',
+            multiple: true,
+          });
+
+          $("select[name=filter_data_sets]").on("select2:select", function (evt) {
+            var element = evt.params.data.element;
+            var $element = $(element);
+            $element.detach();
+            $(this).append($element);
+            $(this).trigger("change");
+          });
+
+          $("select[name=filter_data_sets]").on("change", function (e) {
+            var lastValue = e.currentTarget.value;
+            var lastText = e.currentTarget;
+            if(e.target.offsetParent != null){
+              var data = new Array();
+              for(var i = 0; i < e.currentTarget.nextElementSibling.childNodes[0].childNodes[0].childNodes[0].childElementCount; i++){
+                if(e.currentTarget.nextElementSibling.childNodes[0].childNodes[0].childNodes[0].childNodes[i].className == "select2-selection__choice")
+                  data.push(e.currentTarget.nextElementSibling.childNodes[0].childNodes[0].childNodes[0].childNodes[i].innerText);
+              }
+              data = JSON.stringify(data)
+              console.log(e)
+              console.log(data)
+              console.log(e.currentTarget.id)
+              Shiny.setInputValue(e.currentTarget.id, data);
+            }
+          });
+
+          $('select[name=filter_data_sets] > option').attr("selected", true).change(
+            $("select[name=filter_data_sets]").trigger("change")
+          );
+
+          $('input[name=date_checkbox]').change(function(){
+          console.log("check!")
+          if($(this).is(":checked")){
+            switch((this.id).split("_")[0]){
+              case 'DateYear':
+                year_check = "1"
+              break;
+              case 'DateMonth':
+                month_check = "1"
+              break;
+              case 'DateDay':
+                day_check = "1"
+              break;              
+            }
+          }
+          else{
+            switch((this.id).split("_")[0]){
+              case 'DateYear':
+                year_check = "0"
+              break;
+              case 'DateMonth':
+                month_check = "0"
+              break;
+              case 'DateDay':
+                day_check = "0"
+              break;              
+            }
+          }
+          console.log(year_check+month_check+day_check)
+          console.log(Number((this.id).split("_")[1])+1)
+          Shiny.setInputValue("DateFilter_value", year_check+month_check+day_check)
+          Shiny.setInputValue("DateFilter_index", Number((this.id).split("_")[1])+1)
+        })
+      })
+
+
+      function show_option(type){
+        console.log("show_option("+type+")")
+        $('div[name=option_div]').hide()
+        $('table[name=option2_div]').hide()
+        switch(type){
+          case 'Histogram':
+            $('#width_div').show();
+            $('#fill_table').show();
+          break;
+          case 'Bar':
+            $('#width_div').show();
+            $('#dodge_div').show();
+            $('#fill_table').show();
+          break;
+          case 'Line':
+            $('#line_type_div').show();
+            $('#size_div').show();
+            $('#arrow_div').show();
+            $('#log_div').show();
+            $('#line_end_div').show();
+            $('#color_table').show();
+            $('#add_point_div').show();
+          break;
+          case 'Area':
+            $('#alpha_div').show();
+            $('#size_div').show();
+            $('#fill_table').show();
+          break;
+          case 'Point':
+            $('#shape_div').show();
+            $('#size_div').show();
+            $('#color_table').show();
+            $('#size_table').show();
+            $('#smooth_div').show();
+          break;   
+          case 'Boxplot':
+            $('#outlier_shape_div').show();
+            $('#notch_div').show();
+          break;   
+          case 'Violin':
+            $('#adjust_div').show();
+            $('#fill_table').show();
+          break; 
+          case 'Density':
+            $('#adjust_div').show();
+            $('#fill_table').show();
+          break; 
+        }
+      }
+    </script>
+
+  </head>
+  <body onunload="close_event()">
+    <div class="be-wrapper be-nosidebar-left">
+      <nav class="navbar navbar-default fixed-top be-top-header" style="z-index: 0;">
+        <div class="container-fluid">
+          <div class="be-navbar-header">
+            <!-- <a class="navbar-brand" href="#"></a> -->
+          </div>
+      </nav>
+      <div class="be-content">
+        <!-- <div class="page-head"> -->
+          <!-- <h2 class="page-head-title">CT Test</h2> -->
+        <!-- </div> -->
+        <div class="main-content container-fluid">
+          <div class="row">
+            <div style="width:150px; margin-right: 10px">
+              <div class="card card-flat mb-1" style="height: 3%; border: 1px solid; background-color: rgb(249,249,249); border: 1px solid; border-color: rgb(203, 203, 203);">
+                <div class="content" style="text-align: center">
+                  <!-- <button class="btn btn-space" style="background-color: transparent; border-color: transparent">Select Data</button> -->
+                  <button class="btn btn-space" style="background-color: transparent; border-color: transparent" disabled></button>
+
+                </div>
+              </div>  
+              <div class="card card-flat" style="height: 95%; border: 1px solid; background-color: rgb(249,249,249); border: 1px solid; border-color: rgb(203, 203, 203);">
+                <div class="content" style="text-align: center" id="variable_button">
+                    {{button}}
+                </div>
+              </div>  
+            </div>
+            <div style="width: 190px; margin-right: 10px">
+                <div class="card card-flat mb-1" style="border: 1px solid; background-color: rgb(249,249,249); border: 1px solid; border-color: rgb(203, 203, 203);">
+                 
+                  <div class="content p-1" style="text-align: center">
+                    <select class="select2 select2-xs" id="variable_type">
+                      <option value="Histogram" selected>Histogram</option>
+                      <option value="Bar">Bar</option>
+                      <option value="Line">Line</option>
+                      <option value="Area">Area</option>
+                      <option value="Point">Point</option>
+                      <option value="Density">Density</option>
+                      <option value="Boxplot">Boxplot</option>
+                      <option value="Violin">Violin</option>
+                    </select> 
+                  </div>
+                  <form class="form-inline">
+                    <div class="btn-group btn-space ml-1">
+                      <button class="btn btn-sm btn-secondary dropdown-toggle m-0" type="button" data-toggle="dropdown" style="width:55px">
+                        <i><img src="Grimi/img/style_icon.png" width="18px" height="17px"></i> <br> Style
+                      </button>
+                      <div class="dropdown-menu p-1" role="menu">
+                        <div class="mt-2">
+                          <span style="font-weight: bold; font-size: 15px">Color Set</span>
+                          <select class="select2 select2-xs" name = "default_select" id="variable_color_set">
+                            <option value="Set1" selected>Set1</option>
+                            <option value="Set2">Set2</option>
+                            <option value="Set3">Set3</option>
+                            <option value="Pastel1">Pastel1</option>
+                            <option value="Pastel2">Pastel2</option>
+                            <option value="Paired">Paired</option>
+                            <option value="Dark2">Dark2</option>
+                            <option value="Accent">Accent</option>
+                            <option value="YlOrRd">YlOrRd</option>
+                            <option value="YlOrBr">YlOrBr</option>
+                            <option value="YlGnBu">YlGnBu</option>
+                            <option value="YlGn">YlGn</option>
+                            <option value="Reds">Reds</option>
+                            <option value="RdPu">RdPu</option>
+                            <option value="Purples">Purples</option>
+                            <option value="PuRd">PuRd</option>
+                            <option value="PuBuGn">PuBuGn</option>
+                            <option value="OrRd">OrRd</option>
+                            <option value="Oranges">Oranges</option>
+                            <option value="Greys">Greys</option>
+                            <option value="Greens">Greens</option>
+                            <option value="GnBu">GnBu</option>
+                            <option value="BnPu">BnPu</option>
+                            <option value="BuGn">BuGn</option>
+                            <option value="Blues">Blues</option>
+                            <option value="Spectral">Spectral</option>
+                            <option value="RdYlGn">RdYlGn</option>
+                            <option value="RdYlBu">RdYlBu</option>
+                            <option value="RdGy">RdGy</option>
+                            <option value="RdBu">RdBu</option>
+                            <option value="PuOr">PuOr</option>
+                            <option value="PRGn">PRGn</option>
+                            <option value="PiYG">PiYG</option>
+                            <option value="BrBG">BrBG</option>
+                          </select>                            
+                        </div>
+                        <div class="mt-4">
+                          <span style="font-weight: bold; font-size: 15px;">Theme</span>                       
+                          <select class="select2 select2-xs" name = "default_select" id="variable_theme" style="margin-top:10px">
+                            <option value="grey">grey</option>
+                            <option value="gray">gray</option>
+                            <option value="bw">bw</option>
+                            <option value="linedraw">linedraw</option>
+                            <option value="light">light</option>
+                            <option value="dark">dark</option>
+                            <option value="minimal">minimal</option>
+                            <option value="classic">classic</option>
+                            <option value="void">void</option>
+                            <option value="test">test</option>
+                          </select>    
+                        </div>
+                        <div class="mt-4 mb-2">
+                          <span style="font-weight: bold; font-size: 15px;">Color</span>                       
+                          <div id="color-picker-container"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="btn-group btn-space">
+                      <button class="btn btn-sm btn-secondary dropdown-toggle m-0" type="button" data-toggle="dropdown" style="width:55px">
+                        <i><img src="Grimi/img/text-icon.png" width="35px" height="25px"></i> <br> Text
+                      </button>
+                      <div class="dropdown-menu p-1" role="menu">
+                        <div class="mt-2">
+                          <span style="font-size: 20px; font-weight: bold">Title & Axis</span>
+                          <div class="form-group row ml-1">
+                            <label class="col-12 col-sm-2 col-form-label text-sm-right" name = "default_select" for="graph_title">Title</label>
+                            <div class="col-12 col-sm-10 col-lg-8">
+                              <input class="form-control" id="graph_title" type="text">
+                            </div>
+                          </div>
+                          <div class="form-group row ml-1">
+                            <label class="col-12 col-sm-2 col-form-label text-sm-right" name = "default_select" for="graph_x_label">X Label</label>
+                            <div class="col-12 col-sm-10 col-lg-8">
+                              <input class="form-control" id="graph_x_label" type="text">
+                            </div>
+                          </div>
+                          <div class="form-group row ml-1">
+                            <label class="col-12 col-sm-2 col-form-label text-sm-right" name = "default_select" for="graph_y_label">Y Label</label>
+                            <div class="col-12 col-sm-10 col-lg-8">
+                              <input class="form-control" id="graph_y_label" type="text">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="mt-4">
+                          <span style="font-size: 20px; font-weight: bold">Style</span>
+                          <div class="col-12 form-check mt-1" id="select_title_axis">
+                            <label class="custom-control custom-radio custom-control-inline">
+                              <input class="custom-control-input" type="radio" name="text-radio" value="title" checked><span class="custom-control-label">Title</span>
+                            </label>
+                            <label class="custom-control custom-radio custom-control-inline">
+                              <input class="custom-control-input" type="radio" name="text-radio" value="x_label"><span class="custom-control-label">X Label</span>
+                            </label>
+                            <label class="custom-control custom-radio custom-control-inline">
+                              <input class="custom-control-input" type="radio" name="text-radio" value="y_label"><span class="custom-control-label">Y Label</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="mt-4">
+                          <span style="font-size: 15px; font-weight: bold">Size</span>
+                          <div class="col-12 mt-2">
+                            <input class="custom-range" type="range" value="18" min="1" max="100" id="font-size">
+                          </div>
+                        </div>
+                        <div class="mt-4 mb-2">
+                          <span style="font-size: 15px; font-weight: bold">Color</span>
+                          <div id="font-color-container"></div>
+                        </div>
+                      </div>
+                    </div>    
+                    <div class="btn-group btn-space">
+                      <button class="btn btn-sm btn-secondary dropdown-toggle m-0" type="button" data-toggle="dropdown" style="width:55px">
+                        <i><img src="Grimi/img/filter-icon.png" width="19px" height="19px"></i> <br> Filter
+                      </button>
+                      <div class="dropdown-menu p-1" role="menu" id="filter_menu" style="width: 500px">
+                      </div>
+                    </div>    
+                  </form>
+                  <form class="form-inline">
+                    <div class="btn-group btn-space ml-1">
+                      <button class="btn btn-sm btn-secondary dropdown-toggle m-0" type="button" data-toggle="dropdown" style="width:55px">
+                        <i><img src="Grimi/img/label-icon.png" width="35px" height="25px"></i> <br> Label
+                      </button>
+                      <div class="dropdown-menu p-1" role="menu" style="width:300px">
+                        <div class="mt-2">
+                          <div class="col-12">
+                            <label class="custom-control custom-checkbox">
+                              <input class="custom-control-input" type="checkbox" name="default_checkbox" id="variable_flip"><span class="custom-control-label">Flip</span>
+                            </label>
+                          </div>
+                        </div>     
+                        <div class="mt-4">
+                          <div class="col-12">
+                            <label class="custom-control custom-checkbox">
+                              <input class="custom-control-input" type="checkbox" name="default_checkbox" id="variable_label"><span class="custom-control-label">Show label</span>
+                            </label>
+                          </div>
+                        </div>
+                        <!-- <div class="mt-4 mb-2">
+                          <span style="font-size: 15px; font-weight: bold">Label Text</span>
+                          <select class="select2 select2-xs mt-2" name="default_select" id="label_text" style="margin-top:10px">
+                            <option value="raw" selected>Raw Data</option>
+                            <option value="mean">Mean</option>
+                            <option value="median">Median</option>
+                            <option value="mode">Mode</option>
+                          </select>
+                        </div> -->
+                        <div class="mt-4" id="position_div">
+                          <span style="font-size: 15px; font-weight: bold">Label Position</span>
+                          <div class="col-12 mt-2">
+                            <input class="custom-range" type="range" name="default_slider" value="0.5" min="0" max="1" step="0.1" id="label_position">
+                          </div>
+                        </div>
+                        <div class="mt-4 mb-2">
+                          <span style="font-size: 15px; font-weight: bold">Legend Position</span>
+                          <select class="select2 select2-xs mt-2" name="default_select" id="legend_position" style="margin-top:10px">
+                            <option value="right" selected>right</option>
+                            <option value="left">left</option>
+                            <option value="top">top</option>
+                            <option value="bottom">bottom</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="btn-group btn-space">
+                      <button class="btn btn-sm btn-secondary dropdown-toggle m-0" type="button" data-toggle="dropdown" style="width:55px">
+                        <i><img src="Grimi/img/option-icon.png" width="20px" height="20px"></i> <br> Option
+                      </button>
+                      <div class="dropdown-menu p-1" role="menu" style="width:300px">
+                        <div class="mt-2" id="width_div" name="option_div">
+                          <span style="font-size:15px; font-weight: bold">Width</span>
+                          <div class="col-12 mt-2">
+                            <input class="custom-range" type="range" name="default_slider" value="0.09" min="0" max="1" step="0.01" id="width">
+                          </div>
+                        </div>
+                        <div class="mt-4" id="size_div" name="option_div">
+                          <span style="font-size:15px; font-weight: bold">Size</span>
+                          <div class="col-12 mt-2">
+                            <input class="custom-range" type="range" name="default_slider" value="5" min="1" max="10" step="1" id="line_size">
+                          </div>
+                        </div>
+                        <div class="mt-4" id="outlier_size_div" name="option_div">
+                          <span style="font-size:15px; font-weight: bold">Outlier Size</span>
+                          <div class="col-12 mt-2">
+                            <input class="custom-range" type="range" name="default_slider" value="5" min="1" max="10" step="1" id="outlier_size">
+                          </div>
+                        </div>
+                        <div class="mt-4" id="alpha_div" name="option_div">
+                          <span style="font-size:15px; font-weight: bold">Alpha</span>
+                          <div class="col-12 mt-2">
+                            <input class="custom-range" type="range" name="default_slider" value="1" min="0" max="1" step="0.1" id="option_alpha">
+                          </div>
+                        </div>
+                        <div class="mt-4" id="adjust_div" name="option_div">
+                          <span style="font-size:15px; font-weight: bold">Adjust</span>
+                          <div class="col-12 mt-2">
+                            <input class="custom-range" type="range" name="default_slider" value="1" min="0" max="10" step="0.5" id="option_adjust">
+                          </div>
+                        </div>
+                        <div class="mt-4" id="dodge_div" name="option_div">
+                          <div class="col-12">
+                            <label class="custom-control custom-checkbox">
+                              <input class="custom-control-input" type="checkbox" name="default_checkbox" id="option_dodge"><span class="custom-control-label">Dodge</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="mt-4" id="smooth_div" name="option_div">
+                          <div class="col-12">
+                            <label class="custom-control custom-checkbox">
+                              <input class="custom-control-input" type="checkbox" name="default_checkbox" id="option_smooth"><span class="custom-control-label">Smooth</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="mt-4" id="add_point_div" name="option_div">
+                          <div class="col-12">
+                            <label class="custom-control custom-checkbox">
+                              <input class="custom-control-input" type="checkbox" name="default_checkbox" id="option_add_point"><span class="custom-control-label">Add Point</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="mt-4" id="arrow_div" name="option_div">
+                          <div class="col-12">
+                            <label class="custom-control custom-checkbox">
+                              <input class="custom-control-input" type="checkbox" name="default_checkbox" id="option_arrow"><span class="custom-control-label">Arrow</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="mt-4" id="log_div" name="option_div">
+                          <div class="col-12">
+                            <label class="custom-control custom-checkbox">
+                              <input class="custom-control-input" type="checkbox" name="default_checkbox" id="option_log"><span class="custom-control-label">Log</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="mt-4" id="notch_div" name="option_div">
+                          <div class="col-12 mt-2">
+                            <label class="custom-control custom-checkbox">
+                              <input class="custom-control-input" type="checkbox" name="default_checkbox" id="option_notch"><span class="custom-control-label">Notch</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="mt-4" id="line_type_div" name="option_div">
+                          <span style="font-size:15px; font-weight: bold">Line Type</span>
+                          <select class="select2 select2-xs mt-2" name="default_select" id="option_linetype" style="margin-top:10px">
+                            <option value="solid">solid</option>
+                            <option value="dashed">dashed</option>
+                            <option value="dotted">dotted</option>
+                            <option value="dotdash">dotdash</option>
+                            <option value="longdash">longdash</option>
+                            <option value="twodash">twodash</option>
+                            <option value="blank">blank</option>
+                          </select>
+                        </div>
+                        <div class="mt-4" id="shape_div" name="option_div">
+                          <span style="font-size:15px; font-weight: bold">Shape</span>
+                          <select class="select2 select2-xs mt-2" name="img_select" id="option_shape" style="margin-top:10px">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                            <option value="21">21</option>
+                            <option value="22">22</option>
+                            <option value="23">23</option>
+                            <option value="24">24</option>
+                            <option value="25">25</option>
+                          </select>
+                        </div>
+                        <div class="mt-4" id="outlier_shape_div" name="option_div">
+                          <span style="font-size:15px; font-weight: bold">Outlier Shape</span>
+                          <select class="select2 select2-xs" name="img_select" id="outlier_shape" style="margin-top:10px">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                            <option value="21">21</option>
+                            <option value="22">22</option>
+                            <option value="23">23</option>
+                            <option value="24">24</option>
+                            <option value="25">25</option>
+                          </select>
+                        </div>
+                        <div class="mt-4 mb-2" id="line_end_div" name="option_div">
+                          <span style="font-size:15px; font-weight: bold">Line end</span>
+                          <select class="select2 select2-xs" name="default_select" id="option_lineend" style="margin-top:10px">
+                            <option value="butt">butt</option>
+                            <option value="square">square</option>
+                            <option value="round">round</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>    
+   
+                  </form>
+
+                  <div class="content p-1" style="text-align: center">
+                    {{download_plot}}
+                  </div>
+                </div>
+    
+              <table class="table w-100 mb-1 p-0" id="fill_table" name="option2_div">
+                <tr class = "m-0 p-0" style="height:30px; background-color: rgb(249,249,249)">
+                  <td class = "m-0 p-0" style="width : 50px; height:30px; border: 1px solid; border-color: rgb(203, 203, 203); background-color: rgb(243,243,243)">
+                    <form class="form-inline">
+                      <span class="mr-1"></span><p class="m-0 p-0" style="font-weight: bold">Fill</p>
+                    </form>
+                  </td>
+                  <td class = "m-0 p-0" style="border: 1px solid; border-color: rgb(203, 203, 203)">
+                    {{variable_fill}}
+                  </td>
+                </tr>    
+              </table>
+              <table class="table w-100 mb-1 p-0" id="color_table" name="option2_div">
+                <tr class = "m-0 p-0" style="height:30px; background-color: rgb(249,249,249)">
+                  <td class = "m-0 p-0" style="width : 50px; height:30px; border: 1px solid; border-color: rgb(203, 203, 203); background-color: rgb(243,243,243)">
+                    <form class="form-inline">
+                      <span class="mr-1"></span><p class="m-0 p-0" style="font-weight: bold">Color</p>
+                    </form>
+                  </td>
+                  <td class = "m-0 p-0" style="border: 1px solid; border-color: rgb(203, 203, 203)">
+                    {{variable_color}}
+                  </td>
+                </tr>    
+              </table>
+              <table class="table w-100 mb-1 p-0" id="size_table" name="option2_div">
+                <tr class = "m-0 p-0" style="height:30px; background-color: rgb(249,249,249)">
+                  <td class = "m-0 p-0" style="width : 50px; height:30px; border: 1px solid; border-color: rgb(203, 203, 203); background-color: rgb(243,243,243)">
+                    <form class="form-inline">
+                      <span class="mr-1"></span><p class="m-0 p-0" style="font-weight: bold">Size</p>
+                    </form>
+                  </td>
+                  <td class = "m-0 p-0" style="border: 1px solid; border-color: rgb(203, 203, 203)">
+                    {{variable_size}}
+                  </td>
+                </tr>    
+              </table>
+              <table class="table w-100 mb-1 p-0" id="facet_table">
+                <tr class = "m-0 p-0" style="height:30px; background-color: rgb(249,249,249)">
+                  <td class = "m-0 p-0" style="width : 50px; height:30px; border: 1px solid; border-color: rgb(203, 203, 203); background-color: rgb(243,243,243)">
+                    <form class="form-inline">
+                      <span class="mr-1"></span><p class="m-0 p-0" style="font-weight: bold">Facet</p>
+                    </form>
+                  </td>
+                  <td class = "m-0 p-0" style="border: 1px solid; border-color: rgb(203, 203, 203)">
+                    {{variable_facet}}
+                  </td>
+                </tr>    
+              </table>
+
+            </div>
+            <div id="variables" style="width: calc(100% - 380px)">
+           
+              <table class="table w-100 mb-1 p-0">
+                <tr class = "m-0 p-0" style="height:30px; background-color: rgb(249,249,249)">
+                  <td class = "m-0 p-0" style="width : 100px; height:30px; border: 1px solid; border-color: rgb(203, 203, 203); background-color: rgb(243,243,243)">
+                    <form class="form-inline">
+                      <span class="mdi mdi-long-arrow-right ml-2 mr-1"></span><p class="m-0 p-0" style="font-weight: bold">X</p>
+                    </form>
+                  </td>
+                  <td class = "m-0 p-0" style="border: 1px solid; border-color: rgb(203, 203, 203)">
+                    {{variable_x}}
+                  </td>
+                </tr>
+              </table>
+              <table class="table w-100 mb-1 p-0">
+                  <tr class = "m-0 p-0" style="height:30px; background-color: rgb(249,249,249)">
+                    <td class = "m-0 p-0" style="width : 100px; height:30px; border: 1px solid; border-color: rgb(203, 203, 203); background-color: rgb(243,243,243)">
+                      <form class="form-inline">
+                        <span class="mdi mdi-long-arrow-up ml-2 mr-2"></span><p class="m-0 p-0" style="font-weight: bold">Y</p>
+                      </form>      
+                    </td>
+                    <td class = "m-0 p-0" style="border: 1px solid; border-color: rgb(203, 203, 203)">
+                      {{variable_y}}
+                    </td>
+                  </tr>
+                </table>
+
+              <div class="card">
+                <div class="card-body" id="graph_card">
+                  {{graph}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="Grimi/lib/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="Grimi/lib/perfect-scrollbar/js/perfect-scrollbar.min.js" type="text/javascript"></script>
+    <script src="Grimi/lib/bootstrap/dist/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script src="Grimi/js/app.js" type="text/javascript"></script>
+    <script src="Grimi/lib/prettify/prettify.js" type="text/javascript"></script>
+    <script src="Grimi/lib/dragula/dragula.js" type="text/javascript"></script>
+    <script src="Grimi/js/iro.min.js" type="text/javascript"></script>
+    <script src="Grimi/js/app-form-elements.js" type="text/javascript"></script>
+    <script src="Grimi/lib/select2/js/select2.min.js"  type="text/javascript"></script>
+    <script src="Grimi/lib/bootstrap-slider/bootstrap-slider.min.js" type="text/javascript"></script>
+
+  </body>
+</html>
