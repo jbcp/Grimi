@@ -1,6 +1,6 @@
 # Grimi
 데이터 시각화를 손쉽게 할 수 있도록 도와주는 R Package입니다.
-![Grimi](Grimi.gif)
+![Grimi](Grimi.jpg)
 
 ## 주요 기능
 + Drag&Drop을 이용한 그래프 구조 설정
