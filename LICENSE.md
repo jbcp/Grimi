@@ -149,7 +149,13 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
--------------------------
-material-design-icons
--------------------------
+----------------------------------
+material-design-icons license
+----------------------------------
 https://github.com/google/material-design-icons/blob/master/LICENSE
+
+
+---------------------
+iro.js license
+---------------------
+https://github.com/jaames/iro.js/blob/master/LICENSE.txt
