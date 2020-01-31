@@ -7,7 +7,7 @@
 + 그래프 커스터마이징 기능
 
 ## SW Prerequisites
-+ R (version 3.6.0) 
++ R (version 3.6.2) 
 + shiny (version 1.3.2) 
 + shinyjs (version 1.0)
 + ggplot2 (version 3.2.0)
@@ -34,6 +34,11 @@ Grimi()
 + If you want to use browser
 ```
 Grimi(viewer="browser")
+```
+
++ If you want to use your data (The type of data you want to use must be data.frame)
+```
+Grimi(datas = your_data_name)
 ```
 
 ## Contact to developer(s)
