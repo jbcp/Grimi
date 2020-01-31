@@ -23,7 +23,7 @@
 ```
 install.packages("devtools")
 libray(devtools)
-devtools::install_github("JBCP/Grimi")
+devtools::install_github("jbcp/Grimi")
 ```
 
 + Execution
