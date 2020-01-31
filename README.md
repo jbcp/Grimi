@@ -41,5 +41,18 @@ Grimi(viewer="browser")
 Grimi(datas = your_data_name)
 ```
 
+## License
+MIT
+
+## Used Libraries
++ bootstrap
++ bootstrap-slider
++ dragula
++ jquery
++ material-design-icons
++ perfect-scrollbar
++ select2
++ iro.js
+
 ## Contact to developer(s)
  [MINJI KIM](https://github.com/minjikim0927)  - mjkim@jbcp.kr
