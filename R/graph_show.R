@@ -1,7 +1,7 @@
-graph_show <- function(){
+graph_show <- function(pkg.globals){
   if(typeof(pkg.globals$graph_source$Fill) == "character") pkg.globals$graph <- pkg.globals$graph_source$Source
   else pkg.globals$graph <- pkg.globals$graph_source$Fill
-
+  
   # print(typeof(graph))
   if(typeof(pkg.globals$graph) != "character"){
     if(typeof(pkg.globals$graph_source$Type) != "character") pkg.globals$graph <- pkg.globals$graph + pkg.globals$graph_source$Type
