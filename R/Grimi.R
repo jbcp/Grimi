@@ -182,7 +182,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
       
     })
     
@@ -192,7 +192,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
     })
     
     observeEvent(input$graph_y_label, {
@@ -201,7 +201,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
     })
     
     observeEvent(input$single_color_value, {
@@ -212,7 +212,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
           try({
             graph_show(pkg.globals)
             output$result_graph <- renderPlot({pkg.globals$graph})
-          },silent = FALSE)       }
+          },silent = TRUE)       }
       }
       
     })
@@ -225,7 +225,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
                  try({
                    graph_show(pkg.globals)
                    output$result_graph <- renderPlot({pkg.globals$graph})
-                 },silent = FALSE)              }
+                 },silent = TRUE)              }
              },
              "x_label" ={
                if(pkg.globals$graph_source$x_label_color != input$font_color_value) {
@@ -233,7 +233,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
                  try({
                    graph_show(pkg.globals)
                    output$result_graph <- renderPlot({pkg.globals$graph})
-                 },silent = FALSE)              }
+                 },silent = TRUE)              }
              },
              "y_label" ={
                if(pkg.globals$graph_source$y_label_color != input$font_color_value) {
@@ -241,7 +241,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
                  try({
                    graph_show(pkg.globals)
                    output$result_graph <- renderPlot({pkg.globals$graph})
-                 },silent = FALSE)              }
+                 },silent = TRUE)              }
              }
       )
       
@@ -263,7 +263,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$data_y,{
       pkg.globals$y_value <- input$data_y
@@ -271,7 +271,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$data_facet, {
       pkg.globals$facet_value <- input$data_facet
@@ -279,7 +279,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
     })
     
     observeEvent(input$variable_type, {
@@ -288,7 +288,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$data_fill,{
       pkg.globals$fill_value <- input$data_fill
@@ -297,7 +297,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$data_color, {
       pkg.globals$color_value <- input$data_color
@@ -307,7 +307,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$data_size, {
       pkg.globals$size_value <- input$data_size
@@ -317,7 +317,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$variable_color_set, {
       getPalette <- colorRampPalette(brewer.pal(pkg.globals$color_name[pkg.globals$color_name$color == input$variable_color_set,]$count, input$variable_color_set))
@@ -327,7 +327,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$variable_theme, {
       pkg.globals$theme_value <- input$variable_theme
@@ -346,7 +346,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
     })
     
     observeEvent(input$option_dodge, {
@@ -357,7 +357,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$option_arrow, {
       if(input$option_arrow == TRUE) pkg.globals$option_setting$arrow <- "arrow"
@@ -367,7 +367,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$option_notch, {
       if(input$option_notch == TRUE) pkg.globals$option_setting$notch <- "notch"
@@ -377,7 +377,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$variable_flip, {
       if(input$variable_flip == TRUE) pkg.globals$graph_source$Flip <- TRUE
@@ -386,7 +386,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
     })
     
     observeEvent(input$font_size, {
@@ -398,7 +398,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
     })
     
     observeEvent(input$width, {
@@ -408,7 +408,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$option_adjust, {
       pkg.globals$option_setting$adjust <- input$option_adjust
@@ -417,7 +417,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$line_size, {
       pkg.globals$option_setting$line_size <- input$line_size
@@ -426,7 +426,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$outlier_size, {
       pkg.globals$option_setting$line_size <- input$outlier_size
@@ -435,7 +435,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$option_alpha, {
       pkg.globals$option_setting$alpha <- input$option_alpha
@@ -444,7 +444,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$label_position, {
       pkg.globals$label_pos <- input$label_position
@@ -454,7 +454,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
         try({
           graph_show(pkg.globals)
           output$result_graph <- renderPlot({pkg.globals$graph})
-        },silent = FALSE)
+        },silent = TRUE)
       }
     })
     
@@ -464,7 +464,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
     })
     
     observeEvent(input$option_lineend, {
@@ -473,7 +473,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
     })
     
     observeEvent(input$option_shape, {
@@ -482,7 +482,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$outlier_shape, {
       pkg.globals$option_setting$shape <- input$outlier_shape
@@ -490,7 +490,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)   })
+      },silent = TRUE)   })
     
     observeEvent(input$legend_position, {
       pkg.globals$legend_pos <- input$legend_position
@@ -498,7 +498,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
     })
     
     observeEvent(input$variable_label, {
@@ -516,7 +516,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
       try({
         graph_show(pkg.globals)
         output$result_graph <- renderPlot({pkg.globals$graph})
-      },silent = FALSE)
+      },silent = TRUE)
     })
     
     lapply(1:ncol(pkg.globals$filter_data), function(i){
@@ -529,7 +529,7 @@ Grimi <- function(datas = iris, viewer="dialog"){
         try({
           graph_show(pkg.globals)
           output$result_graph <- renderPlot({pkg.globals$graph})
-        },silent = FALSE)     })
+        },silent = TRUE)     })
       
     })
     
