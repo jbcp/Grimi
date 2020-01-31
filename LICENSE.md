@@ -152,4 +152,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -------------------------
 material-design-icons
 -------------------------
-(https://github.com/google/material-design-icons/blob/master/LICENSE)
+https://github.com/google/material-design-icons/blob/master/LICENSE
